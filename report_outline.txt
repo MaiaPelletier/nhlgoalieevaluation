@@ -1,13 +1,29 @@
-Intro/Objectives:
+GOALIE EVALUATION
+------------------------
+
+
+INTRO/OBJECTIVES
 	- how much to pay goalies
 	- how good are goalies
 	- do they work hard for the money?
 
-Best goalies
-	- how many goalies? who are the best ones?(based on the wins, sh%, gaa, gsaa)
+BEST GOALIES
+	- how many goalies? who are the best ones?
+	- (based on the wins, sh%, gaa, gsaa)
 	- show where the goalies are from (it could be a single plot since most of the goalies will be the same over the years), what do they look like? (height & weight)
 
-Goalies contracts
-	- show how much goalies get paid(line plot), how has that changed over time? 
-	- Do this depend on how good their teams are?
-	s
+GOALIES CONTRACTS
+	- show how much goalies get paid
+	- how has that changed over time? (line plot)
+	- Do this depend on how good their team is?
+	
+HOW CONTRACTS AFFECT PLAY
+	- How good are goalies that got paid a lot? (vice versa)
+
+HOW MUCH WILL GOALIES GET PAID
+
+CONCLUSIONS
+
+DATA
+
+REFERENCES
