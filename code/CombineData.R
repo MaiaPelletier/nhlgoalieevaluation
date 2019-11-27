@@ -1,13 +1,13 @@
 ## Load libraries used
 library(readxl)
 library(skimr)
-library(visdat)
 library(janitor)
 library(dplyr)
 library(ggplot2)
 library(readr)
 library(stringr) 
 library(lubridate)
+library(tidyverse)
 
 path <- 'data/'
 
@@ -17,6 +17,7 @@ mh_files <- paste0(path, list.files(path, pattern = 'MH_'))
 
 ## General cleaning function
 clean_mh_data <- function(mh_data) {
+  
   tidy_mh_data <- 
     mh_data %>%
     clean_names() %>%
@@ -96,8 +97,6 @@ for (y in 1:nrow(response)) {
 
 mh_data <- new_mh_data
 
-write_csv(new_mh_data, 'MH_goaliedata.csv')
-
 # Combine HockeyReference -------------------------------------------------
 
 hr_files <- paste0(path, list.files(path, pattern = 'HR_'))
@@ -111,6 +110,7 @@ hr_data_list <- list()
 for (i in 1:num_of_sheets) {
   hr_data_list[[i]] <- 
     read_excel(hr_files, sheet = i, skip = 1) %>% 
+    clean_names() %>%
     mutate(szn = hr_szns[i])
 }
 
@@ -121,12 +121,8 @@ for (i in 1:num_of_sheets) {
 hr_data <- tibble()
 for (i in 1:length(hr_data_list)) {
   hr_data <- 
-    bind_rows(hr_data, hr_data_list[[i]]) %>%
-    clean_names()
+    bind_rows(hr_data, hr_data_list[[i]])
 }
-
-hr_data %>% 
-  write_csv('HR_goaliedata.csv')
 
 
 # Combine MoneyPuck -------------------------------------------------------
@@ -147,9 +143,6 @@ mp_data <- tibble()
 for (i in 1:length(mp_data_list)) {
   mp_data <- bind_rows(mp_data, mp_data_list[[i]])
 }
-
-mp_data %>%
-  write_csv('MP_goaliedata.csv')
 
 # Combine CapFriendly -------------------------------------------------
 
@@ -185,6 +178,3 @@ for (i in 1:length(cf_data_list)) {
   cf_data <- 
     bind_rows(cf_data, cf_data_list[[i]]) 
 }
-
-cf_data %>% 
-  write_csv('CF_goaliedata.csv')
