@@ -105,17 +105,42 @@ num_of_sheets <- length(excel_sheets(hr_files))
 
 hr_szns <- paste0(12:18, '-', 13:19)
 
-## Append data from each sheet in excel file to empty list
+# General cleaning function
+clean_hr_data <- function(hr_data) {
+  
+  hr_data <- 
+    hr_data %>%
+    clean_names() %>%
+    mutate(szn = hr_szns[i]) %>%
+    mutate(player = str_remove(player, '\\\\[\\w]+')) %>%
+    add_count(player, name = 'num_of_teams') %>%
+    mutate(
+      num_of_teams = ifelse(num_of_teams > 1, num_of_teams - 1, num_of_teams)
+    )
+  
+  clean_data <-
+    bind_rows(
+      ## Traded players
+      hr_data %>%
+        filter(num_of_teams > 1) %>%
+        filter(tm == 'TOT'),
+      ## Players that played on the same team all szn
+      hr_data %>%
+        filter(num_of_teams == 1)
+    ) %>%
+    arrange(rk)
+  
+  
+  return(clean_data)
+}
+
+## Append data from each sheet in excel file to empty list and clean
 hr_data_list <- list()
 for (i in 1:num_of_sheets) {
   hr_data_list[[i]] <- 
     read_excel(hr_files, sheet = i, skip = 1) %>% 
-    clean_names() %>%
-    mutate(szn = hr_szns[i])
+    clean_hr_data()
 }
-
-## Note: HockeyRef data was perfectly clean (that we can tell) so cleaning was
-## not needed before creating dataset
 
 ## Combine data into on dataset
 hr_data <- tibble()
