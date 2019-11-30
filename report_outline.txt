@@ -3,7 +3,7 @@ GOALIE EVALUATION
 Tasks:
 
 - Maia: 
-	- Get standings
+	x Get standings
 	x Clean player names for HR
 	- where goalies are from
 	x top 10 paid goalies in the league
@@ -19,6 +19,12 @@ Tasks:
 - Ange:
 	- Line plot showing avg contract per year
 	- Weight/height
+
+------------------------
+
+Notes:
+
+- Filter games played > 40 
 
 ------------------------
 
