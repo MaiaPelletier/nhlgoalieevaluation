@@ -5,10 +5,11 @@ Tasks:
 - Maia: 
 	x Get standings
 	x Clean player names for HR
-	- where goalies are from
+	x where goalies are from
 	x top 10 paid goalies in the league
 	- show how good team is vs how good goalie is
-	x geom_ridgeline() for salary distribution by szn
+	x salary distribution by szn
+	- regression model
 
 - Erhardt:
 	- How good are goalies 

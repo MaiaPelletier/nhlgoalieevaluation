@@ -113,6 +113,7 @@ clean_hr_data <- function(hr_data) {
     clean_names() %>%
     mutate(szn = hr_szns[i]) %>%
     mutate(player = str_remove(player, '\\\\[\\w]+')) %>%
+    mutate(player = str_remove(player, '\\*')) %>%
     add_count(player, name = 'num_of_teams') %>%
     mutate(
       num_of_teams = ifelse(num_of_teams > 1, num_of_teams - 1, num_of_teams)
@@ -128,6 +129,7 @@ clean_hr_data <- function(hr_data) {
       hr_data %>%
         filter(num_of_teams == 1)
     ) %>%
+    rename(team = tm) %>%
     arrange(rk)
   
   
@@ -158,7 +160,8 @@ mp_data_list <- list()
 for(i in 1:length(mp_files)) {
   mp_data_list[[i]] <- 
     read_csv(mp_files[i]) %>%
-      clean_names()
+      clean_names() %>%
+      mutate(szn = hr_szns[i])
 }
 
 ## Note: MoneyPuck data was perfectly clean (that we can tell) so cleaning was
@@ -203,3 +206,11 @@ for (i in 1:length(cf_data_list)) {
   cf_data <- 
     bind_rows(cf_data, cf_data_list[[i]]) 
 }
+
+cf_data <-
+  cf_data %>%
+    separate(drafted, into = c('overall', 'draft_round', 'draft_year'), sep = ' - ') %>%
+    separate(draft_year, into = c('draft_year', 'draft_team'), sep = ' ') %>%
+    mutate(overall = as.numeric(overall),
+           draft_year = as.numeric(draft_year),
+           draft_team = str_remove_all(draft_team, '[\\( \\)]'))

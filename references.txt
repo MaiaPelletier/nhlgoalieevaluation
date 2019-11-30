@@ -1,0 +1,16 @@
+https://stackoverflow.com/questions/7334644/sort-columns-of-a-dataframe-by-column-name
+
+https://github.com/juba/rmdformats
+
+https://blog.rstudio.com/2016/03/21/r-markdown-custom-formats/
+
+http://metahockey.com/resources/data/sources/compiled/
+
+https://github.com/ropensci/rnaturalearth
+
+https://stackoverflow.com/questions/20155581/persistent-invalid-graphics-state-error-when-using-ggplot2
+
+
+
+
+

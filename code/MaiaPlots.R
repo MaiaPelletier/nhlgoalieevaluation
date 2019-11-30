@@ -4,6 +4,7 @@
 ## - Distribution of contract value
 ## - Top 10 paid goalies in leagues
 ## - Contracts by annual value and length in years
+## - Map of where goalies are from
 
 ## Load libraries
 library(dplyr)
@@ -36,11 +37,11 @@ cf_data %>%
 ## Get top 10 paid players in league over last 7 years
 top_10_paid <- 
   cf_data %>%
-  group_by(player) %>%
-  top_n(1, aav) %>%
-  ungroup() %>%
-  distinct(player, aav, team) %>%
-  top_n(10, aav)
+    group_by(player) %>%
+    top_n(1, aav) %>%
+    ungroup() %>%
+    distinct(player, aav, team) %>%
+    top_n(10, aav)
 
 ## Plot top 10 paid players
 top_10_paid %>%
@@ -76,3 +77,30 @@ cf_data %>%
   scale_fill_teams(which = 2) +
   scale_color_teams(which = 1) +
   theme_classic()
+
+## Plot map of where goalies are from
+goalie_countries <- 
+  cf_data %>%
+    count(country, name = "num_of_goalies") %>%
+    na.omit()
+
+world <- 
+  ne_countries(
+    scale = "medium", 
+    returnclass = "sf", 
+    continent = c('North America', 'Europe')
+  )
+
+world %>%
+  left_join(goalie_countries, by = c('name' = 'country')) %>%
+  ggplot() +
+  geom_sf(aes(fill = num_of_goalies)) +
+  ggtitle('Where are NHL goalies from?') +
+  scale_fill_viridis(option = 'C', name = 'Number of goalies') +
+  theme_void() +
+  theme(legend.position = "bottom",
+        legend.key.height = unit(2, 'mm'),
+        legend.text = element_text(size = 7),
+        legend.title = element_text(size = 8))
+
+
