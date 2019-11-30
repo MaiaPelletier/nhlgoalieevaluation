@@ -4,10 +4,11 @@ Tasks:
 
 - Maia: 
 	- Get standings
-	- Clean player names for HR
+	x Clean player names for HR
 	- where goalies are from
-	- top 10 paid goalies in the league
+	x top 10 paid goalies in the league
 	- show how good team is vs how good goalie is
+	x geom_ridgeline() for salary distribution by szn
 
 - Erhardt:
 	- How good are goalies 
