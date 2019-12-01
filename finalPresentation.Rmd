@@ -1,0 +1,448 @@
+---
+title: "NHL Goalie Contract Evaluation"
+output: ioslides_presentation
+author: Ange Michaella Niyonkuru, Erhardt Jansen van Rensburg, and Maia Pelletier
+date: "`r Sys.Date()`"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+# slides customization
+# https://bookdown.org/yihui/rmarkdown/slide-backgrounds.html
+
+## Load libraries
+library(dplyr)
+library(ggplot2)
+library(teamcolors)
+library(ggsci)
+library(rnaturalearth)
+library(sf)
+library(sp)
+library(fishualize)
+library(plotly)
+library(ggrepel)
+library(patchwork)
+
+source("code/CombineData.R")
+
+```
+
+## Intro/Objectives
+
+- How much to pay goalies
+- How good are goalies
+- Do they work hard for the money?
+
+## Best goalies (& worst goalies) {data-background=#ebf5ff}
+
+- How many goalies are we looking at?
+- Where are the goalies from and what do they look like (height & weight)? 
+- Who are the best ones?
+- Top 10 averages by goalies over the past 6 years
+- Worst 10 averages by goalies over the last 6 years
+- Top goalies by season
+
+## Best goalies
+
+- How many goalies are we looking at?
+ 
+```{r}
+hr_data %>% 
+  select(player) %>%
+  unique() %>% 
+  nrow()
+
+```
+ 
+
+## Best goalies
+- Where are NHL goalies from?
+
+```{r, warning = FALSE, message = FALSE}
+
+# Plots -------------------------------------------------------------------
+
+## Contains plots for:
+## - Distribution of contract value
+## - Top 10 paid goalies in leagues
+## - Contracts by annual value and length in years
+## - Map of where goalies are from
+
+## Set theme for graphics
+theme_set(theme_minimal())
+
+## Plot map of where goalies are from
+goalie_countries <- 
+  cf_data %>%
+    count(country, name = "num_of_goalies") %>%
+    na.omit()
+
+world <- 
+  ne_countries(
+    scale = "medium", 
+    returnclass = "sf", 
+    continent = c('North America', 'Europe')
+  )
+
+world %>%
+  left_join(goalie_countries, by = c('name' = 'country')) %>%
+  ggplot() +
+  geom_sf(aes(fill = num_of_goalies)) +
+  labs(fill = "Number of goalies") + 
+  #ggtitle('Where are NHL goalies from?') +
+  scale_fill_fish(option = "Prionace_glauca", direction = -1) +
+  theme_void() +
+  theme(legend.position = "bottom",
+        legend.key.height = unit(2, 'mm'),
+        legend.text = element_text(size = 7),
+        legend.title = element_text(size = 8))
+
+```
+
+## Best goalies
+
+- What do they look like (height & weight)?
+
+```{r, warning = FALSE}
+
+## https://www.r-graph-gallery.com/bubble_chart_interactive_ggplotly.html
+## https://stackoverflow.com/questions/36325154/how-to-choose-variable-to-display-in-tooltip-when-using-ggplotly
+
+cf_data_player_height_weight <- cf_data %>% select(player, weight, height, age, country) %>%
+  clean_names() %>%
+  unique() %>% 
+  mutate(weight_kg = sub(".*-","", weight) %>% parse_number(), 
+         height_cm = sub(".*-","",height) %>% parse_number(), 
+         text= paste("Player: ", player, "\nAge: " , age, "\nCountry: ", country)) 
+
+p <- cf_data_player_height_weight %>%
+  ggplot(aes(x = weight_kg, y = height_cm, colour = age)) + 
+  geom_point(aes(label = player, label2 = country),alpha = 0.7) + 
+  labs(
+    x = "Player weight in kg",
+    y= "Player height in cm",
+    title = "Correlation between players' height and weight",
+    colour = "Player age"
+  )
+
+ggplotly(p)
+
+```
+
+
+## Best goalies
+
+- Top 10 averages by goalies over the past 6 years
+
+```{r, warning = FALSE}
+hr_data <- hr_data %>% mutate(w_percent = w/gp)
+
+Salaries <- cf_data %>% group_by(player) %>% 
+  summarise(mean_aav = mean(aav)) %>% 
+  mutate(player = replace(player,player == "Marc-André Fleury","Marc-Andre Fleury")) %>%
+  mutate(player = replace(player,player == "Jaroslav Halák","Jaroslav Halak"))
+
+
+Best_Goalies <- hr_data %>% 
+  filter(!(player == "Martin Jones" & szn == "14-15")) %>%
+  group_by(player) %>% 
+  summarise(mean_sv_percent = mean(sv_percent),mean_gp = mean(gp), mean_gaa = mean(gaa), mean_w_percent = mean(w_percent), 
+            mean_gsaa = mean(gsaa)) %>% 
+  filter(mean_gp > 40)
+
+Best_Goalies <- Best_Goalies %>% left_join(Salaries, by =c("player"= "player"))
+
+Mean_sv_plot <- Best_Goalies %>% 
+  top_n(10,mean_sv_percent) %>%
+  ggplot(aes(x = mean_sv_percent, y = mean_aav)) + 
+  geom_point() +
+  geom_text_repel(aes(label = player), size = 2) +
+  labs(x = "Save Percentage", y = "Average Annual Salary")
+
+Mean_gaa_plot <- Best_Goalies %>% 
+  top_n(-10,mean_gaa) %>%
+  ggplot(aes(x = mean_gaa, y = mean_aav)) + 
+  geom_point() +
+  geom_text_repel(aes(label = player), size = 2) +
+  labs(x = "Goals Against Average", y = "Average Annual Salary")
+
+mean_w_percent_plot <- Best_Goalies %>% 
+  top_n(10, mean_w_percent) %>% 
+  ggplot(aes(x = mean_w_percent, y = mean_aav)) + 
+  geom_point() + 
+  geom_text_repel(aes(label = player), size = 2) +
+  labs(x = "Percentage of Games Won", y = "Average Annual Salary")
+
+
+mean_gsaa_plot <- Best_Goalies %>% 
+  top_n(10, mean_gsaa) %>% 
+  ggplot(aes(x = mean_gsaa,y = mean_aav))+ 
+  geom_point() + 
+  geom_text_repel(aes(label = player), size = 2) +
+  labs(x = "Goals Saved Above Average", y = "Average Annual Salary")
+
+
+best_average_plots <- (Mean_sv_plot | Mean_gaa_plot) / (mean_w_percent_plot | mean_gsaa_plot)
+ 
+best_average_plots + plot_annotation(
+  title = "Top 10 Averages By Goalies Over The Last Six Years"
+)
+
+
+```
+
+
+## Best goalies
+
+- Worst 10 averages by goalies over the last 6 years
+
+```{r, warning = FALSE}
+
+worst_mean_sv_plot <- Best_Goalies %>% 
+  top_n(-10,mean_sv_percent) %>%
+  ggplot(aes(x = mean_sv_percent, y = mean_aav)) + 
+  geom_point() +
+  geom_text_repel(aes(label = player), size = 2) +
+  labs(x = "Save Percentage", y = "Average Annual Salary")
+
+worst_mean_gaa_plot <- Best_Goalies %>% 
+  top_n(10,mean_gaa) %>%
+  ggplot(aes(x = mean_gaa, y = mean_aav)) + 
+  geom_point() +
+  geom_text_repel(aes(label = player), size = 2) +
+  labs(x = "Goals Against Average", y = "Average Annual Salary")
+
+worst_mean_w_percent_plot <- Best_Goalies %>% 
+  top_n(-10, mean_w_percent) %>% 
+  ggplot(aes(x = mean_w_percent, y = mean_aav)) + 
+  geom_point() + 
+  geom_text_repel(aes(label = player), size = 2) +
+  labs(x = "Percentage of Games Won", y = "Average Annual Salary")
+
+
+worst_mean_gsaa_plot <- Best_Goalies %>% 
+  top_n(-10, mean_gsaa) %>% 
+  ggplot(aes(x = mean_gsaa,y = mean_aav))+ 
+  geom_point() + 
+  geom_text_repel(aes(label = player), size = 2) +
+  labs(x = "Goals Saved Above Average", y = "Average Annual Salary")
+
+
+Worst_average_plots <- (worst_mean_sv_plot | worst_mean_gaa_plot) / (worst_mean_w_percent_plot | worst_mean_gsaa_plot)
+
+Worst_average_plots + plot_annotation(
+  title = "Worst 10 Averages By Goalies Over The Last Six Years"
+)
+
+```
+
+
+## Best goalies 
+
+- Top goalies by season
+
+```{r, warning = FALSE}
+
+# Finding the best goalies by Season
+# creates tables for each stat we are looking at
+
+top_goalie_sv <- function(season){
+  top_goalie_stats <- hr_data %>% filter(szn == season, gp > 40) 
+  top_goalie_sv_percent <- top_goalie_stats %>% top_n(1,sv_percent) %>%
+    select(player, sv_percent, szn)
+  return(top_goalie_sv_percent)
+}
+
+top_goalie_gaa <- function(season){
+  top_goalie_stats <- hr_data %>% filter(szn == season, gp > 40)
+  goalie_gaa <- top_goalie_stats %>% top_n(-1,gaa) %>% 
+    select(player, gaa, szn)
+  return(goalie_gaa)
+}
+
+
+top_goalie_w_percent <- function(season){
+  top_goalie_stats <- hr_data %>% filter(szn == season, gp > 40)
+  goalie_w_percent <- top_goalie_stats %>% top_n(1,w_percent) %>% 
+    select(player, w_percent, szn)
+  return(goalie_w_percent)
+}
+
+
+top_goalie_gsaa <- function(season){
+  top_goalie_stats <- hr_data %>% filter(szn == season, gp > 40)
+  goalie_gsaa <- top_goalie_stats %>% top_n(1,gsaa) %>% 
+    select(player, gsaa, szn)
+  return(goalie_gsaa)
+}
+
+#Loop to fill in the tables
+
+best_sv_year <- tibble()
+best_gaa_year <- tibble()
+best_win_percent_year <- tibble()
+best_gsaa_year <- tibble()
+for (i in 1:7){
+  best_sv_year <- bind_rows(best_sv_year,top_goalie_sv(hr_szns[i]))
+  best_gaa_year <- bind_rows(best_gaa_year,top_goalie_gaa(hr_szns[i]))
+  best_win_percent_year <- bind_rows(best_win_percent_year,top_goalie_w_percent(hr_szns[i]))
+  best_gsaa_year <- bind_rows(best_gsaa_year,top_goalie_gsaa(hr_szns[i]))
+}
+
+
+
+#Plots to see best goalies by season 
+
+
+sv_plot <- best_sv_year %>% ggplot(aes(x = szn, y = sv_percent)) + 
+  geom_point() +
+  geom_text_repel(aes(label = player), size = 2) +
+  coord_flip() + 
+  labs(x = "Season", y = "Save Percentage")
+
+gaa_plot <- best_gaa_year %>% ggplot(aes(x =szn, y = gaa)) + 
+  geom_point() +
+  geom_text_repel(aes(label = player), size = 2) +
+  coord_flip() + 
+  labs(x = "Season", y = "Goals Against Average")
+
+w_percent_plot <- best_win_percent_year %>% ggplot(aes(x = szn, y = w_percent)) + 
+  geom_point() +
+  geom_text_repel(aes(label = player), size = 2) +
+  coord_flip() + 
+  labs(x = "Season", y = "Win Percentage")
+
+gsaa_plot <- best_gsaa_year %>% ggplot(aes(x = szn, y = gsaa)) + 
+  geom_point() +
+  geom_text_repel(aes(label = player), size = 2) +
+  coord_flip() + 
+  labs(x = "Season", y = "Goals Saved Above Average")
+
+year_plots <- (sv_plot | gaa_plot) / (w_percent_plot | gsaa_plot)
+
+year_plots + plot_annotation(
+  title = "Top Goalies by Season"
+)
+
+```
+
+## Worst goalies
+
+- Who are the worst ones? [Erhardt's plot]
+
+## Goalies contracts {data-background=#ebf5ff}
+
+- How much goalies get paid and how has that changed over time? 
+- Do this depend on how good their team is?
+
+## Goalies contracts
+
+- How much goalies get paid and how has that changed over time? 
+
+```{r, warning = FALSE}
+
+theme_set(theme_minimal())
+
+cf_data %>%
+  filter(gp > 40) %>%
+  mutate(szn = paste0(20, szn)) %>%
+  ggplot(aes(szn, aav, fill = szn, color = szn)) +
+  geom_violin(alpha = 0.8, show.legend = F, trim = T, adjust = 0.75, width = 1) +
+  geom_boxplot(width = 0.1, color = 'grey80', fill = 'grey50', alpha = 0.1) +
+  labs(x = NULL, y = 'Average annual value ($)') +
+  ggtitle('Distribution of goalie average annual value') +
+  ggsci::scale_color_futurama() +
+  ggsci::scale_fill_futurama() +
+  theme_classic() +
+  theme(axis.line = element_blank(),
+        axis.text.x = element_text(size = 12, color = 'grey25'),
+        axis.text.y = element_text(size = 7, color = 'grey25'),
+        axis.title.y = element_text(size = 9, color = 'grey25', face = 'italic'),
+        plot.title = element_text(hjust = 0.5, size = 16, color = 'grey15', face= 'italic'))
+
+
+
+```
+
+
+## Goalies contracts
+ 
+- Do this depend on how good their team is? [Maia's plot]
+
+## Goalies contracts
+ 
+- Top 10 paid players? [Maia's plot]
+
+```{r, warning = FALSE}
+
+## Get top 10 paid players in league over last 7 years
+top_10_paid <- 
+  cf_data %>%
+    group_by(player) %>%
+    top_n(1, aav) %>%
+    ungroup() %>%
+    distinct(player, aav, team) %>%
+    top_n(10, aav)
+
+## Plot top 10 paid players
+top_10_paid %>%
+  mutate(point_lab = paste0('$', as.integer(aav))) %>%
+  mutate(team = substr(team, start = str_length(team) - 2, stop = str_length(team))) %>%
+  mutate(player = paste0(player, '\n(', team, ')     ')) %>%
+  left_join(teamcolors, by = c('team' = 'name')) %>%
+  ggplot() +
+  geom_segment(aes(x = reorder(player, aav), xend = player, y = 0, yend = aav), color = 'grey50') +
+  geom_point(aes(x = player, y = aav, color = team), size = 5, show.legend = F) +
+  labs(x = NULL, y = 'AAV($)') +
+  ggtitle('Top 10 paid players in the league (as of 2018-19)') +
+  coord_flip() +
+  scale_color_futurama() +
+  theme_classic() +
+  theme(axis.line = element_blank(),
+        axis.text.y = element_text(size = 10, color = 'grey25'),
+        axis.text.x = element_text(size = 7, color = 'grey25'),
+        axis.title.x = element_text(size = 9, color = 'grey25', face = 'italic'),
+        plot.title = element_text(hjust = 0.5, size = 16, color = 'grey25', face= 'italic'))
+
+```
+
+
+## Goalies contracts
+ 
+- Does it depend on the contract length?
+
+```{r, warning = FALSE}
+
+## Plot contract by aav and length
+cf_data %>%
+  mutate(team = substr(team, start = 1, stop = str_length(team) - 3)) %>%
+  filter(szn == '18-19', gp > 40) %>%
+  left_join(teamcolors, by = c('team' = 'name')) %>%
+  ggplot(aes(x = aav, y = length)) +
+  geom_label(aes(label = player, fill = team, color = team), show.legend = T, 
+             label.padding = unit(0.15, "lines"), size = 2.5, label.r = unit(0.1, "lines"), position = 'jitter') +
+  labs(x = 'Average annual value ($)', y = 'Contract length (yrs)') +
+  ggtitle('Goalie contracts based on annual value and length in years') +
+  scale_fill_teams(which = 2) +
+  scale_color_teams(which = 1) +
+  theme_classic()
+
+```
+
+
+## How contracts affect play {data-background=#ebf5ff}
+
+- How good are goalies that got paid a lot? (vice versa)
+
+## How much will goalies get paid {data-background=#ebf5ff}
+
+- [regression model from Maia]
+
+## Conclusions 
+
+## Data 
+
+## References 
+
+
