@@ -11,6 +11,10 @@ library(dplyr)
 library(ggplot2)
 library(teamcolors)
 library(ggsci)
+library(rnaturalearth)
+library(sf)
+library(sp)
+library(fishualize)
 
 ## Set theme for graphics
 theme_set(theme_minimal())
@@ -96,7 +100,7 @@ world %>%
   ggplot() +
   geom_sf(aes(fill = num_of_goalies)) +
   ggtitle('Where are NHL goalies from?') +
-  scale_fill_viridis(option = 'C', name = 'Number of goalies') +
+  scale_fill_fish(option = "Prionace_glauca", direction = -1) +
   theme_void() +
   theme(legend.position = "bottom",
         legend.key.height = unit(2, 'mm'),

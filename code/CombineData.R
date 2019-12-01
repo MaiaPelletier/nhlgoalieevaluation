@@ -95,7 +95,9 @@ for (y in 1:nrow(response)) {
   }
 }
 
-mh_data <- new_mh_data
+mh_data <- 
+  new_mh_data %>%
+    unite('player', c('first_name', 'last_name'), sep = ' ')
 
 # Combine HockeyReference -------------------------------------------------
 
@@ -214,3 +216,24 @@ cf_data <-
     mutate(overall = as.numeric(overall),
            draft_year = as.numeric(draft_year),
            draft_team = str_remove_all(draft_team, '[\\( \\)]'))
+
+# Combine NHL Standings ---------------------------------------------------
+
+standings_files <- paste0(path, list.files(path, pattern = 'nhl_standings'))
+
+num_of_sheets <- length(excel_sheets(standings_files))
+
+standings_szns <- paste0(12:18, '-', 13:19)
+
+## Combine data into one dataset
+standings_data <- tibble()
+for (i in 1:num_of_sheets) {
+  add <- 
+    read_excel(standings_files, sheet = i, skip = 1) %>% 
+    clean_names() %>%
+    mutate(szn = standings_szns[i]) %>%
+    select(rk, team = x2, w, l, ol, pts) %>%
+    mutate(team = str_remove(team, '\\*'))
+  
+  standings_data <- bind_rows(standings_data, add)
+}

@@ -10,6 +10,8 @@ https://github.com/ropensci/rnaturalearth
 
 https://stackoverflow.com/questions/20155581/persistent-invalid-graphics-state-error-when-using-ggplot2
 
+https://github.com/nschiett/fishualize
+
 
 
 
