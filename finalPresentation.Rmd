@@ -181,6 +181,8 @@ for (i in 1:length(hr_data_list)) {
 
 mp_files <- paste0(path, list.files(path, pattern = 'MP_'))
 
+hr_szns <- paste0(12:18, '-', 13:19)
+
 mp_data_list <- list()
 for(i in 1:length(mp_files)) {
   mp_data_list[[i]] <- 
@@ -188,9 +190,6 @@ for(i in 1:length(mp_files)) {
       clean_names() %>%
       mutate(szn = hr_szns[i])
 }
-
-## Note: MoneyPuck data was perfectly clean (that we can tell) so cleaning was
-## not needed before creating dataset
 
 mp_data <- tibble()
 for (i in 1:length(mp_data_list)) {
@@ -297,7 +296,7 @@ hr_data %>%
 ```
 
 ## How many games do goalies play in general?
-```{r GP Histogram, fig.height=3}
+```{r GP Histogram, fig.height=2}
 ggplot(hr_data, aes(gp)) +
   geom_histogram(binwidth = 5, fill = '#a7d2cb', alpha = 0.8) +
   labs(x = 'Games played in the NHL by goalies', y = 'Frequency',
@@ -370,7 +369,6 @@ p <- cf_data_player_height_weight %>%
   labs(
     x = "Player weight in kg",
     y= "Player height in cm",
-    title = "Goalie height and weight chart",
     colour = "Player age"
   ) +
   scale_color_fish(option = "Prionace_glauca", direction = -1)
@@ -380,7 +378,7 @@ ggplotly(p)
 ```
 
 
-## Best goalies 
+## Top 10 Averages By Goalies
 
 ```{r, warning = FALSE}
 
@@ -452,17 +450,16 @@ mean_gsaa_plot <-
 
 best_average_plots <- (Mean_sv_plot | Mean_gaa_plot) / (mean_w_percent_plot | mean_gsaa_plot)
  
-best_average_plots + 
-  plot_annotation(
-    title = "Top 10 Averages By Goalies Over The Last Six Seasons"
-    )
+best_average_plots 
+# + 
+#   plot_annotation(
+#     title = "Top 10 Averages By Goalies Over The Last Six Seasons"
+#     )
 ```
 
 
 
-## Best goalies 
-
-- Top goalies by season
+## Top goalies by season 
 
 ```{r, warning = FALSE}
 
@@ -551,14 +548,15 @@ gsaa_plot <-
 
 year_plots <- (sv_plot | gaa_plot) / (w_percent_plot | gsaa_plot)
 
-year_plots + plot_annotation(
-  title = "Top Goalies by Season"
-)
+year_plots 
+# + plot_annotation(
+#   title = "Top Goalies by Season"
+# )
 
 ```
 
 
-## Worst Goalies
+## Worst Goalies over past seasons
 
 ```{r, warning = FALSE, message = FALSE}
 
@@ -596,9 +594,10 @@ worst_mean_gsaa_plot <- Best_Goalies %>%
 
 Worst_average_plots <- (worst_mean_sv_plot | worst_mean_gaa_plot) / (worst_mean_w_percent_plot | worst_mean_gsaa_plot)
 
-Worst_average_plots + plot_annotation(
-  title = "Worst 10 Averages By Goalies Over The Last Six Seasons"
-)
+Worst_average_plots 
+# + plot_annotation(
+#   title = "Worst 10 Averages By Goalies Over The Last Six Seasons"
+# )
 
 ```
 
@@ -655,97 +654,17 @@ wg_w_percent <- worst_goalies %>%
 
 Worst_goalies_plot <- (wg_sv_percent | wg_gaa) / (wg_w_percent | wg_gsaa)
 
-Worst_goalies_plot + plot_annotation(
-  title = "Worst perfoming goalies and how much they get paid"
-)
+Worst_goalies_plot 
+# + plot_annotation(
+#   title = "Worst perfoming goalies and how much they get paid"
+# )
 
 ```
+  
+## First place team goalie performance
+- Red point is league average
 
-
-## Goalies contracts {data-background=#ebf5ff}
-
-- How much goalies get paid in general and how has that changed over time? 
-- Does this depend on how good their team is?
-
-## Goalies contracts
-
-- How much do goalies get paid and how has that changed over time? 
-
-```{r, warning = FALSE}
-
-cf_data %>%
-  filter(gp > 40) %>%
-  mutate(szn = paste0(20, szn)) %>%
-  ggplot(aes(szn, aav, fill = szn, color = szn)) +
-  geom_violin(alpha = 0.8, show.legend = F, trim = T, adjust = 0.75, width = 1) +
-  geom_boxplot(width = 0.1, color = 'grey80', fill = 'grey50', alpha = 0.1) +
-  labs(x = NULL, y = 'Average annual value ($)') +
-  #ggtitle('Distribution of goalie average annual value') +
-  ggsci::scale_color_futurama() +
-  ggsci::scale_fill_futurama() +
-  theme_classic() +
-  theme(axis.line = element_blank(),
-        axis.text.x = element_text(size = 12, color = 'grey25'),
-        axis.text.y = element_text(size = 7, color = 'grey25'),
-        axis.title.y = element_text(size = 9, color = 'grey25', face = 'italic'),
-        plot.title = element_text(hjust = 0.5, size = 16, color = 'grey15', face= 'italic'))
-```
-
-## Contract inflation
-
-- How are goalie contracts inflating?
-
-```{r Contract inflation, warning=FALSE, message=FALSE}
-cf_data %>%
-  group_by(exp_year) %>%
-  summarise(med_aav = median(aav)) %>%
-  ggplot(aes(exp_year, med_aav)) +
-  geom_step(color = 'turquoise3', size = 1) +
-  labs(x = 'Contract expiry year', y = 'Median average annual value of contract') +
-  #scale_fill_fish(option = "Prionace_glauca", direction = -1) +
-  theme_classic() +
-  theme(axis.line = element_blank())
-```
-## Goalies contracts
- 
-- Who are the Top 10 paid players in the last 7 years?
-
-```{r, warning = FALSE}
-
-## Get top 10 paid players in league over last 7 years
-top_10_paid <- 
-  cf_data %>%
-    group_by(player) %>%
-    top_n(1, aav) %>%
-    ungroup() %>%
-    distinct(player, aav, team) %>%
-    top_n(10, aav)
-
-## Plot top 10 paid players
-top_10_paid %>%
-  mutate(point_lab = paste0('$', as.integer(aav))) %>%
-  mutate(team = substr(team, start = str_length(team) - 2, stop = str_length(team))) %>%
-  mutate(player = paste0(player, '\n(', team, ')     ')) %>%
-  left_join(teamcolors, by = c('team' = 'name')) %>%
-  ggplot() +
-  geom_segment(aes(x = reorder(player, aav), xend = player, y = 0, yend = aav), color = 'grey50') +
-  geom_point(aes(x = player, y = aav, color = team), size = 5, show.legend = F) +
-  labs(x = NULL, y = 'AAV($)') +
-  #ggtitle('Top 10 paid players in the league (as of 2018-19)') +
-  coord_flip() +
-  scale_color_futurama() +
-  theme_classic() +
-  theme(axis.line = element_blank(),
-        axis.text.y = element_text(size = 10, color = 'grey25'),
-        plot.title = element_text(hjust = 0.5, size = 16, color = 'grey25', face= 'italic'))
-
-```
-
-## Goalies contracts
- 
-- Do this depend on how good their team is?
-
-```{r}
+```{r, message=FALSE, warning=FALSE}
 league_avgs <-
   hr_data %>%
   filter(gp > 20) %>%
@@ -803,11 +722,90 @@ starting_goalies_gaa <-
     theme_hc()
 
 starting_goalies_comb <- starting_goalies_sv_percent / starting_goalies_gaa
+starting_goalies_comb
 ```
 
-## Can we predict how much goalies with get paid? {data-background=#ebf5ff}
+
+## Goalies contracts {data-background=#ebf5ff}
+
+- How much goalies get paid in general and how has that changed over time? 
+- Who gets paid the most?
+
+## How much do goalies get paid and how has that changed over time? 
+
+```{r, warning = FALSE}
+
+cf_data %>%
+  filter(gp > 40) %>%
+  mutate(szn = paste0(20, szn)) %>%
+  ggplot(aes(szn, aav, fill = szn, color = szn)) +
+  geom_violin(alpha = 0.8, show.legend = F, trim = T, adjust = 0.75, width = 1) +
+  geom_boxplot(width = 0.1, color = 'grey80', fill = 'grey50', alpha = 0.1) +
+  labs(x = NULL, y = 'Average annual value ($)') +
+  #ggtitle('Distribution of goalie average annual value') +
+  ggsci::scale_color_futurama() +
+  ggsci::scale_fill_futurama() +
+  theme_classic() +
+  theme(axis.line = element_blank(),
+        axis.text.x = element_text(size = 12, color = 'grey25'),
+        axis.text.y = element_text(size = 7, color = 'grey25'),
+        axis.title.y = element_text(size = 9, color = 'grey25', face = 'italic'),
+        plot.title = element_text(hjust = 0.5, size = 16, color = 'grey15', face= 'italic'))
+```
+
+## Contract inflation
+
+- How are goalie contracts inflating?
+
+```{r Contract inflation, warning=FALSE, message=FALSE}
+cf_data %>%
+  group_by(exp_year) %>%
+  summarise(med_aav = median(aav)) %>%
+  ggplot(aes(exp_year, med_aav)) +
+  geom_step(color = 'turquoise3', size = 1) +
+  labs(x = 'Contract expiry year', y = 'Median average annual value of contract') +
+  #scale_fill_fish(option = "Prionace_glauca", direction = -1) +
+  theme_classic() +
+  theme(axis.line = element_blank())
+```
+  
+## Who are the Top 10 paid players in the last 7 years?
+
+```{r, warning = FALSE}
+
+## Get top 10 paid players in league over last 7 years
+top_10_paid <- 
+  cf_data %>%
+    group_by(player) %>%
+    top_n(1, aav) %>%
+    ungroup() %>%
+    distinct(player, aav, team) %>%
+    top_n(10, aav)
+
+## Plot top 10 paid players
+top_10_paid %>%
+  mutate(point_lab = paste0('$', as.integer(aav))) %>%
+  mutate(team = substr(team, start = str_length(team) - 2, stop = str_length(team))) %>%
+  mutate(player = paste0(player, '\n(', team, ')     ')) %>%
+  left_join(teamcolors, by = c('team' = 'name')) %>%
+  ggplot() +
+  geom_segment(aes(x = reorder(player, aav), xend = player, y = 0, yend = aav), color = 'grey50') +
+  geom_point(aes(x = player, y = aav, color = team), size = 5, show.legend = F) +
+  labs(x = NULL, y = 'AAV($)') +
+  #ggtitle('Top 10 paid players in the league (as of 2018-19)') +
+  coord_flip() +
+  scale_color_futurama() +
+  theme_classic() +
+  theme(axis.line = element_blank(),
+        axis.text.y = element_text(size = 10, color = 'grey25'),
+        plot.title = element_text(hjust = 0.5, size = 16, color = 'grey25', face= 'italic'))
+
+```
+
+## Can we predict how much goalies will get paid? {data-background=#ebf5ff}
 
 - Build multivariate regression model to predict contract average annual value
+- Make predictions and compare to actual contracts
 
 ```{r Regression prep}
 ## Prep and combine data
@@ -819,8 +817,8 @@ cf_reg_data <-
     player = stri_trans_general(player, 'latin-ascii'),
     ## Transform all names to lowercase
     player = str_to_lower(player)) %>%
-  ## Remove redundant cols
-  select(-weight, -height, -pos, -team, -age, -gp, -w, -l, -so, -gaa, -sv_percent)
+    ## Remove redundant cols
+    select(-weight, -height, -pos, -team, -age, -gp, -w, -l, -so, -gaa, -sv_percent)
 
 hr_reg_data <-
   hr_data %>%
@@ -873,11 +871,11 @@ reg_data <-
 
 ## Feature selection
 - *Way* too many predictors
-```{r}
+```{r, echo = TRUE}
 reg_data %>% ncol()
 ```
 
-- Calculate **information gain** for predictors and grab 10 highest predictors in information gain
+## Calculate **information gain** for predictors and grab 10 highest predictors in information gain
 ```{r, echo = FALSE}
 ## Feature selection
 info_gain <- information.gain(formula = aav ~ ., data = reg_data)
@@ -890,8 +888,7 @@ feat_selected <-
 feat_selected %>% head() %>% kable() %>% kable_styling()
 ```
 
-## Build model
-- Build regression model with selected features
+## Build regression model with selected features
 
 ```{r linear model}
 ## Model
@@ -901,24 +898,24 @@ summary(mod)
 
 ## Predictions
 
-- Sergei Bobrovsky
+- Sergei Bobrovsky: got paid $11M AAV when he signed this season
 
 ```{r}
 new_data1 <- 
   joined_data %>%
   filter(player == 'sergei bobrovsky', szn == '18-19') %>%
-  select(subset_info_gain, aav)
+  select(subset_info_gain)
 
 predict(mod, new_data1)
 ```
 
-- Mikko Koskinen 
+- Mikko Koskinen: got paid $4.5M AAV when he signed an extension
 
 ```{r}
 new_data2 <-
   joined_data %>%
   filter(player == 'mikko koskinen') %>%
-  select(subset_info_gain, aav)
+  select(subset_info_gain)
 
 predict(mod, new_data2)
 ```
