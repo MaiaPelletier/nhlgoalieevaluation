@@ -9,7 +9,7 @@ Tasks:
 	x top 10 paid goalies in the league
 	- show how good team is vs how good goalie is
 	x salary distribution by szn
-	- regression model
+	x regression model
 
 - Erhardt:
 	- How good are goalies 
