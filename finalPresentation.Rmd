@@ -1,6 +1,7 @@
 ---
 title: "NHL Goalie Contract Evaluation"
 output: ioslides_presentation
+widescreen: True
 author: Ange Michaella Niyonkuru, Erhardt Jansen van Rensburg, and Maia Pelletier
 date: "`r Sys.Date()`"
 ---
@@ -263,40 +264,31 @@ for (i in 1:num_of_sheets) {
 
 ```
 
+## Agenda 
+
+- Objectives
+- Goalie Overview 
+- Goalie Performance
+- Goalie Contracts
+- Predicting Salary
+- Findings
+
+
 ## Objectives
 
 - How good are goalies?
 - Do they work hard for the money?
 - How much to pay goalies?
 
-## Best goalies (& worst goalies) {data-background=#ebf5ff}
+## Goalie Overview
 
-- How many goalies are we looking at?
-- Where are the goalies from and what do they look like? 
-- Who are the best ones?
-- Top 10 goalies over the past 6 seasons
-- Worst 10 goalies over the last 6 seasons
-- Top goalies by season
-
-## Goalie overview
-
-- How many goalies are we looking at total in the last 7 seasons?
- 
-```{r Total number of goalies}
-hr_data %>% 
+- We analyzed `r hr_data %>% 
   distinct(player) %>% 
-  nrow()
-```
+  nrow()` goalies over the past 7 seasons  
+  
+- How many games do goalies play in general?  
 
-- How many games do goalies play in general?
-```{r Avg num of GP, echo = FALSE}
-hr_data %>%
-  summarise(avg_no_games = mean(gp)) %>%
-  pull(avg_no_games)
-```
-
-## How many games do goalies play in general?
-```{r GP Histogram, fig.height=2}
+```{r GP Histogram, fig.height=3, fig.align="center"}
 ggplot(hr_data, aes(gp)) +
   geom_histogram(binwidth = 5, fill = '#a7d2cb', alpha = 0.8) +
   labs(x = 'Games played in the NHL by goalies', y = 'Frequency',
@@ -304,22 +296,17 @@ ggplot(hr_data, aes(gp)) +
   theme(plot.caption = element_text(color = 'grey50'))
 ```
 
-- How many of those goalies *actually* played in the the NHL? (>40 games played)
-
-```{r GP over 40}
-hr_data %>%
+- There are `r hr_data %>%
   # 40 games ~ just under a full szn for a goalie
   filter(gp > 40) %>%
   distinct(player) %>%
-  nrow()
-```
+  nrow()` goalies who *actually* played in the the NHL? (>40 games played)
 
-
-## Goalie demographics
+## Goalie Overview
 
 - Where are NHL goalies from?
 
-```{r Map, warning = FALSE, message = FALSE}
+```{r Map, warning = FALSE, message = FALSE, fig.align="center"}
 
 ## Plot map of where goalies are from
 
@@ -349,11 +336,11 @@ world %>%
 
 ```
 
-## Goalie demographics
+## Goalie Overview
+Demographics  
 
 - What do they look like (height & weight)?
-
-```{r Height and weight, warning = FALSE}
+```{r Height and weight, warning = FALSE, fig.align="center"}
 
 cf_data_player_height_weight <- cf_data %>% 
   select(player, weight, height, age, country) %>%
@@ -378,9 +365,9 @@ ggplotly(p)
 ```
 
 
-## Top 10 Averages By Goalies
-
-```{r, warning = FALSE}
+## Goalie Performance
+Top 10 Averages By Goalies in the Last 6 Seasons
+```{r, warning = FALSE, fig.width = 10, fig.height= 5, fig.align= "left"}
 
 hr_data <- hr_data %>% mutate(w_percent = w/gp)
 
@@ -459,9 +446,9 @@ best_average_plots
 
 
 
-## Top goalies by season 
-
-```{r, warning = FALSE}
+## Goalie Performance
+Top Goalies by Season 
+```{r, warning = FALSE, fig.width = 10, fig.height= 5, fig.align= "left"}
 
 # Finding the best goalies by Season
 # creates tables for each stat we are looking at
@@ -556,9 +543,9 @@ year_plots
 ```
 
 
-## Worst Goalies over past seasons
-
-```{r, warning = FALSE, message = FALSE}
+## Goalie Performance
+Worst 10 Goalie Averages in the Last 6 Seasons
+```{r, warning = FALSE, message = FALSE, fig.width = 10, fig.height= 5, fig.align= "left"}
 
 #Worst Goalies by averages overall
 
@@ -602,9 +589,10 @@ Worst_average_plots
 ```
 
 
-## Worst goalies over last 6 seasons
+## Goalie Performance
+Goalies that had a really bad season
 
-```{r, warning = FALSE, message = FALSE}
+```{r, warning = FALSE, message = FALSE, fig.width = 10.5, fig.height= 5, fig.align= "left"}
 
 # Some really bad goalies by year 
 
@@ -626,45 +614,49 @@ worst_goalies <- worst_goalies %>%
   mutate(aav = replace_na(aav,0)) %>% 
   mutate(salary = replace_na(salary,0)) %>% 
   mutate(aav = aav+ salary) %>% 
-  unite('player_szn', c('player','szn'), sep = ' | Season:', remove = FALSE) %>%
+  unite('player_szn', c('player','szn'), sep = ' | Season:',remove = FALSE) %>%
   select(-salary) %>%
   mutate(w_percent = w/gp)
 
+
 wg_sv_percent <- worst_goalies %>% 
-  ggplot(aes(x = sv_percent, y = aav)) + 
-  geom_point(size = 2, color = '#a7d2cb') +
+  ggplot(aes(x = sv_percent, y = aav, color = szn)) + 
+  geom_point(size = 2) +
   geom_text_repel(aes(label = player), size = 3) +
-  labs(x = "Save Percentage", y = "Annual Average Salary")
+  labs(x = "Save Percentage", y = "Annual Average Salary", color = "Season")
 
-wg_gsaa <- worst_goalies %>% ggplot(aes(x = gsaa, y = aav)) + 
-  geom_point(size = 2, color = '#f2d388') +
+wg_gsaa <- worst_goalies %>% 
+  ggplot(aes(x = gsaa, y = aav, color = szn)) + 
+  geom_point(size = 2) +
   geom_text_repel(aes(label = player), size = 3) +
-  labs(x = "Goals Saved Above Average", y = "Annual Average Salary")
+  labs(x = "Goals Saved Above Average", y = "Annual Average Salary", color = "Season")
 
-wg_gaa <- worst_goalies %>% ggplot(aes(x = gaa, y = aav)) + 
-  geom_point(size = 2, color = '#c98474') + 
+wg_gaa <- worst_goalies %>% 
+  ggplot(aes(x = gaa, y = aav, color = szn)) + 
+  geom_point(size = 2) + 
   geom_text_repel(aes(label = player), size = 3) +
-  labs(x = "Goals Against Average", y = "Annual Average Salary")
+  labs(x = "Goals Against Average", y = "Annual Average Salary", color = "Season")
 
 wg_w_percent <- worst_goalies %>% 
-  ggplot(aes(x = w_percent, y = aav)) + 
-  geom_point(size = 2, color = '#874c62') + 
+  ggplot(aes(x = w_percent, y = aav, color = szn)) + 
+  geom_point(size = 2) + 
   geom_text_repel(aes(label = player), size = 3) +
-  labs(x = "Win Percentage", y = "Annual Average Salary")
+  labs(x = "Win Percentage", y = "Annual Average Salary", color = "Season")
 
 Worst_goalies_plot <- (wg_sv_percent | wg_gaa) / (wg_w_percent | wg_gsaa)
-
-Worst_goalies_plot 
-# + plot_annotation(
-#   title = "Worst perfoming goalies and how much they get paid"
-# )
+#874c62
+Worst_goalies_plot + plot_annotation(
+   caption = 'A bad season has a save percentage of less than 0.90'
+ )
 
 ```
   
-## First place team goalie performance
+## Goalie Performance
+How well the first placed team goalie performed  
+
 - Red point is league average
 
-```{r, message=FALSE, warning=FALSE}
+```{r, message=FALSE, warning=FALSE, fig.align="center"}
 league_avgs <-
   hr_data %>%
   filter(gp > 20) %>%
@@ -725,15 +717,9 @@ starting_goalies_comb <- starting_goalies_sv_percent / starting_goalies_gaa
 starting_goalies_comb
 ```
 
-
-## Goalies contracts {data-background=#ebf5ff}
-
-- How much goalies get paid in general and how has that changed over time? 
-- Who gets paid the most?
-
-## How much do goalies get paid and how has that changed over time? 
-
-```{r, warning = FALSE}
+## Goalie Contracts
+How much do goalies get paid and how has that changed over time?
+```{r, warning = FALSE, fig.align="center"}
 
 cf_data %>%
   filter(gp > 40) %>%
@@ -753,11 +739,11 @@ cf_data %>%
         plot.title = element_text(hjust = 0.5, size = 16, color = 'grey15', face= 'italic'))
 ```
 
-## Contract inflation
+## Goalie Contracts
 
 - How are goalie contracts inflating?
 
-```{r Contract inflation, warning=FALSE, message=FALSE}
+```{r Contract inflation, warning=FALSE, message=FALSE,fig.align="center"}
 cf_data %>%
   group_by(exp_year) %>%
   summarise(med_aav = median(aav)) %>%
@@ -769,9 +755,9 @@ cf_data %>%
   theme(axis.line = element_blank())
 ```
   
-## Who are the Top 10 paid players in the last 7 years?
-
-```{r, warning = FALSE}
+## Goalie Contracts
+Who are the Top 10 paid players in the last 7 years?
+```{r, warning = FALSE, fig.align="center"}
 
 ## Get top 10 paid players in league over last 7 years
 top_10_paid <- 
@@ -802,7 +788,8 @@ top_10_paid %>%
 
 ```
 
-## Can we predict how much goalies will get paid? {data-background=#ebf5ff}
+## Predicting Salary
+Can we predict how much goalies will get paid?
 
 - Build multivariate regression model to predict contract average annual value
 - Make predictions and compare to actual contracts
@@ -869,26 +856,30 @@ reg_data <-
   select_if(is.numeric)
 ```
 
-## Feature selection
+## Predicting Salary
+Feature selection
+
 - *Way* too many predictors
 ```{r, echo = TRUE}
 reg_data %>% ncol()
 ```
 
-## Calculate **information gain** for predictors and grab 10 highest predictors in information gain
+## Predicting Salary
+Calculate **information gain** for predictors and grab 10 highest predictors in information gain
 ```{r, echo = FALSE}
 ## Feature selection
 info_gain <- information.gain(formula = aav ~ ., data = reg_data)
 subset_info_gain <- cutoff.k(info_gain, k = 10)
 
-feat_selected <- 
-  reg_data %>% 
+feat_selected <-
+  reg_data %>%
   select(subset_info_gain, aav)
 
 feat_selected %>% head() %>% kable() %>% kable_styling()
 ```
 
-## Build regression model with selected features
+## Predicting Salary
+Build regression model with selected features
 
 ```{r linear model}
 ## Model
@@ -896,12 +887,13 @@ mod <- lm(aav~., feat_selected)
 summary(mod)
 ```
 
-## Predictions
+## Predicting Salary
+Predictions
 
 - Sergei Bobrovsky: got paid $11M AAV when he signed this season
 
 ```{r}
-new_data1 <- 
+new_data1 <-
   joined_data %>%
   filter(player == 'sergei bobrovsky', szn == '18-19') %>%
   select(subset_info_gain)
@@ -921,7 +913,9 @@ predict(mod, new_data2)
 ```
 
 
-## Conclusions 
+## Findings
+- How much a goalie gets pais is not always an indicator of how good of a player they actually are 
+- Most of the Goalies get paid around $5 Million/year
 
 ## Thank you
 - Questions?
