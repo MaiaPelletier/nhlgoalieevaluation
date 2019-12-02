@@ -197,7 +197,7 @@ best_average_plots + plot_annotation(
 
 - Worst 10 averages by goalies over the last 6 years
 
-```{r, warning = FALSE}
+```{r, warning = FALSE, message = FALSE}
 
 worst_mean_sv_plot <- Best_Goalies %>% 
   top_n(-10,mean_sv_percent) %>%
@@ -329,7 +329,66 @@ year_plots + plot_annotation(
 
 ## Worst goalies
 
-- Who are the worst ones? [Erhardt's plot]
+- Some really bad goalies by year
+
+```{r, warning = FALSE, message = FALSE}
+
+# Some really bad goalies by year 
+
+missing_salary <- read_xls("data/MH_nhl_goalies_2017-2018.xls") %>% clean_names %>% 
+  unite('player', c('first_name', 'last_name'), sep = ' ') %>% 
+  filter(player == "Scott Darling") %>% 
+  select(player, salary)
+
+
+
+
+worst_goalies <- hr_data %>%
+  filter(gp>40 & sv_percent <0.9)
+
+worst_salaries <- cf_data %>% select(player, aav,szn)
+
+
+worst_goalies <- worst_goalies %>% 
+  left_join(worst_salaries,by = c("player" = "player","szn" = "szn")) %>%
+  left_join(missing_salary, by = c("player" = "player")) %>% 
+  mutate(aav = replace_na(aav,0)) %>% 
+  mutate(salary = replace_na(salary,0)) %>% 
+  mutate(aav = aav+ salary) %>% 
+  unite('player_szn', c('player','szn'), sep = ' | Season:') %>%
+  select(-salary)
+
+
+wg_sv_percent <- worst_goalies %>% 
+  ggplot(aes(x = sv_percent, y = aav)) + 
+  geom_point()+
+  geom_text_repel(aes(label = player_szn), size = 2) +
+  labs(x = "Save Percentage", y = "Annual Average Salary")
+
+wg_gsaa <- worst_goalies %>% ggplot(aes(x = gsaa, y = aav)) + 
+  geom_point()+
+  geom_text_repel(aes(label = player_szn), size = 2) +
+  labs(x = "Goals Saved Above Average", y = "Annual Average Salary")
+
+wg_gaa <- worst_goalies %>% ggplot(aes(x = gaa, y = aav)) + 
+  geom_point()+
+  geom_text_repel(aes(label = player_szn), size = 2) +
+  labs(x = "Goals Against Average", y = "Annual Average Salary")
+
+wg_w_percent <- worst_goalies %>% 
+  ggplot(aes(x = w_percent, y = aav)) + 
+  geom_point() +
+  geom_text_repel(aes(label = player_szn), size = 2) +
+  labs(x = "Win Percentage", y = "Annual Average Salary")
+
+Worst_goalies_plot <- (wg_sv_percent | wg_gaa) / (wg_w_percent | wg_gsaa)
+
+Worst_goalies_plot + plot_annotation(
+  title = "Worst Perfoming goalies"
+)
+
+```
+
 
 ## Goalies contracts {data-background=#ebf5ff}
 
@@ -420,7 +479,7 @@ cf_data %>%
   filter(szn == '18-19', gp > 40) %>%
   left_join(teamcolors, by = c('team' = 'name')) %>%
   ggplot(aes(x = aav, y = length)) +
-  geom_label(aes(label = player, fill = team, color = team), show.legend = T, 
+  geom_label(aes(label = player, fill = team, color = team), show.legend = F, 
              label.padding = unit(0.15, "lines"), size = 2.5, label.r = unit(0.1, "lines"), position = 'jitter') +
   labs(x = 'Average annual value ($)', y = 'Contract length (yrs)') +
   ggtitle('Goalie contracts based on annual value and length in years') +
