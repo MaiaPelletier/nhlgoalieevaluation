@@ -232,7 +232,7 @@ for (i in 1:num_of_sheets) {
     read_excel(standings_files, sheet = i, skip = 1) %>% 
     clean_names() %>%
     mutate(szn = standings_szns[i]) %>%
-    select(rk, team = x2, w, l, ol, pts) %>%
+    select(rk, team = x2, w, l, ol, pts, szn) %>%
     mutate(team = str_remove(team, '\\*'))
   
   standings_data <- bind_rows(standings_data, add)
