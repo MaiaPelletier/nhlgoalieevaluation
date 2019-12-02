@@ -1,0 +1,32 @@
+division,conf,team,abbrev
+Atlantic,East,Boston Bruins,BOS
+Atlantic,East,Buffalo Sabres,BUF
+Atlantic,East,Detroit Red Wings,DET
+Atlantic,East,Florida Panthers,FLA
+Atlantic,East,Montreal Canadiens,MTL
+Atlantic,East,Ottawa Senators,OTT
+Atlantic,East,Tampa Bay Lightning,TBL
+Atlantic,East,Toronto Maple Leafs,TOR
+Metropolitan,East,Carolina Hurricanes,CAR
+Metropolitan,East,Columbus Blue Jackets,CBJ
+Metropolitan,East,New Jersey Devils,NJD
+Metropolitan,East,New York Islanders,NYI
+Metropolitan,East,New York Rangers,NYR
+Metropolitan,East,Philadelphia Flyers,PHI
+Metropolitan,East,Pittsburgh Penguins,PIT
+Metropolitan,East,Washington Capitals,WSH
+Central,West,Chicago Blackhawks,CHI
+Central,West,Colorado Avalanche,COL
+Central,West,Dallas Stars,DAL
+Central,West,Minnesota Wild,MIN
+Central,West,Nashville Predators,NSH
+Central,West,St. Louis Blues,STL
+Central,West,Winnipeg Jets,WPG
+Pacific,West,Anaheim Ducks,ANA
+Pacific,West,Arizona Coyotes,ARI
+Pacific,West,Calgary Flames,CGY
+Pacific,West,Edmonton Oilers,EDM
+Pacific,West,Los Angeles Kings,LAK
+Pacific,West,San Jose Sharks,SJS
+Pacific,West,Vancouver Canucks,VAN
+Pacific,West,Vegas Golden Knights,VGK
