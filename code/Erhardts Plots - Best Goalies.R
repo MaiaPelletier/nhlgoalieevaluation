@@ -11,7 +11,14 @@ hr_data <- hr_data %>% mutate(w_percent = w/gp)
 Salaries <- cf_data %>% group_by(player) %>% 
   summarise(mean_aav = mean(aav)) %>% 
   mutate(player = replace(player,player == "Marc-André Fleury","Marc-Andre Fleury")) %>%
-  mutate(player = replace(player,player == "Jaroslav Halák","Jaroslav Halak"))
+  mutate(player = replace(player,player == "Jaroslav Halák","Jaroslav Halak")) %>% 
+  mutate(player = replace(player, player == "Eddie Läck","Eddie Lack")) %>% 
+  mutate(player = replace(player, player == "Jacob Markström","Jacob Markstrom")) %>%
+  mutate(player = replace(player, player == "Petr Mrázek","Petr Mrazek"))
+  
+
+
+
 
 
 Best_Goalies <- hr_data %>% 
