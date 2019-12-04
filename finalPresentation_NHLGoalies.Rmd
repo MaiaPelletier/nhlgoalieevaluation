@@ -2,7 +2,7 @@
 title: "NHL Goalie Contract Evaluation"
 output: ioslides_presentation
 widescreen: True
-author: Ange Michaella Niyonkuru, Erhardt Jansen van Rensburg, and Maia Pelletier
+author: Ange Michaella Niyonkuru (8962161), Erhardt Jansen van Rensburg (8150118), and Maia Pelletier (8245669)
 date: "`r Sys.Date()`"
 ---
 
@@ -13,6 +13,8 @@ knitr::opts_chunk$set(echo = FALSE)
 # https://bookdown.org/yihui/rmarkdown/slide-backgrounds.html
 
 ## Load libraries
+## NOTE: Please make sure all of the following are installed before knitting
+
 library(tidyverse)
 library(teamcolors)
 library(ggsci)
@@ -30,6 +32,7 @@ library(ggthemes)
 library(stringi)
 library(FSelector)
 library(kableExtra)
+library(broom)
 
 theme_set(theme_minimal())
 
@@ -750,8 +753,8 @@ cf_data %>%
   ggplot(aes(exp_year, med_aav)) +
   geom_step(color = 'turquoise3', size = 1) +
   labs(x = 'Contract expiry year', y = 'Median average annual value of contract') +
-  #scale_fill_fish(option = "Prionace_glauca", direction = -1) +
   theme_classic() +
+  scale_y_continuous(labels = scales::dollar) +
   theme(axis.line = element_blank())
 ```
   
@@ -875,7 +878,7 @@ feat_selected <-
   reg_data %>%
   select(subset_info_gain, aav)
 
-feat_selected %>% head() %>% kable() %>% kable_styling()
+feat_selected %>% head()
 ```
 
 ## Predicting Salary
@@ -884,8 +887,22 @@ Build regression model with selected features
 ```{r linear model}
 ## Model
 mod <- lm(aav~., feat_selected)
-summary(mod)
+
+# Coefficient summary
+mod %>% 
+  tidy()
 ```
+
+## Predicting Salary
+Model evaluation
+
+```{r mod eval}
+# Full model summary
+mod %>%
+  glance() %>%
+  select(1:6)
+```
+
 
 ## Predicting Salary
 Predictions
@@ -914,8 +931,8 @@ predict(mod, new_data2)
 
 
 ## Findings
-- How much a goalie gets pais is not always an indicator of how good of a player they actually are 
-- Most of the Goalies get paid around $5 Million/year
+- Most of the goalies should probably get paid around $5 Million/year
+- How much a goalie gets paid is not always an indicator of how good of a player they actually are 
 
 ## Thank you
 - Questions?
