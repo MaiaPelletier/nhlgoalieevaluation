@@ -1,0 +1,99 @@
+---
+title: "NHL Goalie Evaluation"
+output: 
+  html_document:
+    theme: cosmo
+    toc: true
+    toc_float: true
+    toc_depth: 3
+    css: style.css
+    includes:
+      before_body: header.html
+author: Ange Michaella Niyonkuru (8962161), Erhardt Jansen van Rensburg (), and Maia Pelletier ()
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+## Intro/Objectives
+***
+
+- how much to pay goalies
+- how good are goalies
+- do they work hard for the money?
+	
+There are several other canned themes you can use rather than the default theme. There are 12 additional themes that you can use without installing any other packages: “cerulean”, “cosmo”, “flatly”, “journal”, “lumen”, “paper”, “readable”, “sandstone”, “simplex”, “spacelab”, “united”, and “yeti”. You can read the R Markdown documentation for detail about how to change your theme from the default. Below are screenshots for each of them.
+
+
+## Best Goalies 
+***
+
+- how many goalies are we looking at?
+- show where the goalies are from (it could be a single plot since most of the goalies will be the same over the years), what do they look like? (height & weight)
+	- plot showing where they are from
+	- plot showing height/weight
+- who are the best ones?  
+	- plot of their avg szn
+
+
+## Goalies Contracts
+***
+
+- show how much goalies get paid
+- how has that changed over time? (line plot)
+- Do this depend on how good their team is?
+
+
+
+## How Contracts Affect Pay
+***
+
+- How good are goalies that got paid a lot? (vice versa)
+
+
+## How Much Will Goalies Get Paid
+***
+
+- how many goalies are we looking at?
+- show where the goalies are from (it could be a single plot since most of the goalies will be the same over the years), what do they look like? (height & weight)
+	- plot showing where they are from
+	- plot showing height/weight
+- who are the best ones?  
+	- plot of their avg szn
+
+
+## Conclusions
+***
+
+- how many goalies are we looking at?
+- show where the goalies are from (it could be a single plot since most of the goalies will be the same over the years), what do they look like? (height & weight)
+	- plot showing where they are from
+	- plot showing height/weight
+- who are the best ones?  
+	- plot of their avg szn
+
+
+## Data
+***
+
+- how many goalies are we looking at?
+- show where the goalies are from (it could be a single plot since most of the goalies will be the same over the years), what do they look like? (height & weight)
+	- plot showing where they are from
+	- plot showing height/weight
+- who are the best ones?  
+	- plot of their avg szn
+
+
+## References
+***
+
+1. formating html document:
+  Side navigation menu: https://bookdown.org/yihui/rmarkdown/html-document.html
+  Theme: https://www.datadreaming.org/post/r-markdown-theme-gallery/
+  Horizontal lines: https://holtzy.github.io/Pimp-my-rmd/#horizontal_lines 
+  Custom CSS: https://bookdown.org/yihui/rmarkdown/custom-css-1.html
+
+
