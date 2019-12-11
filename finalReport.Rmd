@@ -16,20 +16,31 @@ author: Ange Michaella Niyonkuru (8962161), Erhardt Jansen van Rensburg (), and 
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
-
-## Intro/Objectives
+## Introduction
 ***
 
-- how much to pay goalies
-- how good are goalies
-- do they work hard for the money?
-	
-There are several other canned themes you can use rather than the default theme. There are 12 additional themes that you can use without installing any other packages: “cerulean”, “cosmo”, “flatly”, “journal”, “lumen”, “paper”, “readable”, “sandstone”, “simplex”, “spacelab”, “united”, and “yeti”. You can read the R Markdown documentation for detail about how to change your theme from the default. Below are screenshots for each of them.
+NHL goalies are kind of an enigma. They're notoriously hard to evaluate and predict in a sport that is already so chaotic. They are also incredibly important to their teams and often you will hear hockey analysts citing teams' goalies as the reason that the team is preforming well or poorly.  
 
+We are interested specifically in evaluating NHL goalies for the purpose of understanding their contracts. How do teams decide how much to pay their goalies? We want to inspect goalies in the post-lockout seasons and take a look at the best, the worst and how much they get paid.  
 
-## Best Goalies 
+## Objective
 ***
+The objective of this report is to evaluate NHL goalies and their contracts in the post-lockout era and then build a model to try and predict how much goalies will get paid on their next contract.
+
+## NHL Goalies 
+***
+
+We wanted to specifically preform this analysis during the post-lockout era (2013-present). Hockey has changed so much in these seasons, comparing goalies from post-lockout era hockey to pre-lockout doesn't quite make sense.  
+
+#### Overview of Goalies  
+
+How many unique goalies are we looking at in these seasons?
+
+```{r}
+# Bar plot with num of unique goalies per szn/
+```
+
+So there were ____ goalies that played at least 1 game in the NHL from 2013-2019. However, it makes no sense to evaluate a goalie based on their performance in just one game
 
 - how many goalies are we looking at?
 - show where the goalies are from (it could be a single plot since most of the goalies will be the same over the years), what do they look like? (height & weight)
