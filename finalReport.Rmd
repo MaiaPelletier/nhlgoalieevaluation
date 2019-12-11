@@ -9,11 +9,32 @@ output:
     css: style.css
     includes:
       before_body: header.html
-author: Ange Michaella Niyonkuru (8962161), Erhardt Jansen van Rensburg (), and Maia Pelletier ()
+author: Ange Michaella Niyonkuru (8962161), Erhardt Jansen van Rensburg (), and Maia Pelletier (8245669)
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+## Load libraries
+library(tidyverse)
+library(teamcolors)
+library(ggsci)
+library(rnaturalearth)
+library(sf)
+library(sp)
+library(fishualize)
+library(plotly)
+library(ggrepel)
+library(patchwork)
+library(janitor)
+library(readxl)
+library(lubridate)
+library(ggthemes)
+library(stringi)
+library(FSelector)
+library(kableExtra)
+
+theme_set(theme_minimal())
 ```
 
 ## Introduction
@@ -25,7 +46,7 @@ We are interested specifically in evaluating NHL goalies for the purpose of unde
 
 ## Objective
 ***
-The objective of this report is to evaluate NHL goalies and their contracts in the post-lockout era and then build a model to try and predict how much goalies will get paid on their next contract.
+The objective of this report is to evaluate NHL goalies and their contracts in the post-lockout era and then build a model to try and predict how much goalies will get paid on their next contract.  
 
 ## NHL Goalies 
 ***
@@ -34,15 +55,47 @@ We wanted to specifically preform this analysis during the post-lockout era (201
 
 #### Overview of Goalies  
 
-How many unique goalies are we looking at in these seasons?
+How many unique goalies played per season?
 
 ```{r}
-# Bar plot with num of unique goalies per szn/
+# hr_data %>%
+#   distinct(player, szn) %>%
+#   count(szn, name = 'number of goalies') %>%
+#   kable() %>%
+#   kable_styling()
 ```
 
-So there were ____ goalies that played at least 1 game in the NHL from 2013-2019. However, it makes no sense to evaluate a goalie based on their performance in just one game
+We see that ~95 goalies played each season. This may seem like a lot but this actually makes sense. From 2013-2017 there were 30 NHL teams in the league and from 2017-2019 there were 31. Each NHL team usually has a starting goalie, a back-up goalie, and a third-string "emergency" goalie. Teams calling-up goalies from their farm teams in emergency situations is also common. So you would (assuming that injuries are uniform) that ``` number of teams in league * 3``` is the approximate number of goalies who play each season. 
 
-- how many goalies are we looking at?
+In total there were ```r hr_data %>% distinct(player) %>% nrow()``` goalies that played at least 1 game in the NHL from 2013-2019. However, It makes no sense to evaluate a goalie based on their performance on just a few games, because of the variation of events that occur in each hockey game. One of the many mysteries surrounding goalies is after how many games can we draw definitive conclusions about their quality of play? Let's look at how many games goalies were playing per season and over their whole careers.  
+
+```{r}
+# gp_szn <- 
+#   ggplot(hr_data, aes(gp)) +
+#   geom_histogram(binwidth = 5, fill = '#a7d2cb', alpha = 0.8) +
+#   labs(x = 'Games played per season by goalies', y = 'Frequency') +
+#   theme(plot.caption = element_text(color = 'grey50'))
+# 
+# gp_overall <- 
+#   hr_data %>%
+#   group_by(player) %>%
+#   summarise(gp = sum(gp)) %>%
+#   ggplot(aes(gp)) +
+#   geom_histogram(binwidth = 25, fill = 'thistle', alpha = 0.8) +
+#   labs(x = 'Games played overall by goalies', y = 'Frequency',
+#        caption = '1 Game played = 1 or more minute played on ice') +
+#   theme(plot.caption = element_text(color = 'grey50'))
+# 
+# gp_szn + gp_overall
+```
+
+In the case of this analysis, we were interested specifically in goalies who had played 40 or more games in the NHL from 2013-2019. Our reasoning behind this is that a full NHL season is 82 games so 40 games is about half a "season" played and seems like a reasonably large enough sample to evaluate a goalie's play. The one downside to this evaluation is that it will devalue the contributions of back-up goalies, but back-up goalies usually don't last as long as starters anyway and thus, their contracts tend to stay around league minimum.  
+
+```{r}
+```
+
+
+
 - show where the goalies are from (it could be a single plot since most of the goalies will be the same over the years), what do they look like? (height & weight)
 	- plot showing where they are from
 	- plot showing height/weight
