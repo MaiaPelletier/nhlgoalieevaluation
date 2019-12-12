@@ -198,9 +198,18 @@ Red point is league average.
 
 -----
 
-1.  formating html document: Side navigation menu:
-    <https://bookdown.org/yihui/rmarkdown/html-document.html> Theme:
-    <https://www.datadreaming.org/post/r-markdown-theme-gallery/>
-    Horizontal lines:
-    <https://holtzy.github.io/Pimp-my-rmd/#horizontal_lines> Custom CSS:
-    <https://bookdown.org/yihui/rmarkdown/custom-css-1.html>
+### Data
+
+  - HockeyReference
+  - CapFriendly
+  - MoneyPuck
+  - MetaHockey
+
+### Report formatting
+
+  - Side navigation menu:
+    <https://bookdown.org/yihui/rmarkdown/html-document.html>
+  - Theme: <https://www.datadreaming.org/post/r-markdown-theme-gallery/>
+  - Horizontal lines:
+    <https://holtzy.github.io/Pimp-my-rmd/#horizontal_lines>
+  - Custom CSS: <https://bookdown.org/yihui/rmarkdown/custom-css-1.html>
