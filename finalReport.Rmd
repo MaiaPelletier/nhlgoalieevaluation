@@ -739,16 +739,99 @@ starting_goalies_comb <- starting_goalies_sv_percent / starting_goalies_gaa
 starting_goalies_comb
 ```
 
-## Goalies Contracts
+## Goalie Contracts
 ***
 
-- show how much goalies get paid
-- how has that changed over time? (line plot)
-- Do this depend on how good their team is?
+Now, we will dive into goalie contracts. How much have goalies been getting paid in the last 6 seasons and how has that been changing? Have contract values been going up or down? Who gets paid the most and do they work hard for the money?  
 
+When analyzing goalie contract, most emphasis was put on analyzing the *average annual value* (AAV) of the contract (i.e. how much they make per year). The way contracts work in the NHL (and most professional sports with a salary cap) can be confusing. Some contracts are front-heavy (get paid the majority of the contract in the first few years), some are padded with bonuses from the signing teams, some have salary retention from previous teams. All of this is done to try and circumvent the salary cap, on a team management level. Thus, we feel it's safe to analyze goalies  using their AAV since using actual salary would be hard to understand, interpret, and every salary varies from goalie to goalie and team to team. At the end of the day, every goalie gets the full-value of their contract and its easy to understand and interepret as if they got paid an equal amount of their contract every season.  
 
+### How much goalies get paid
 
-## How Contracts Affect Pay
+So on average how much has an NHL goaltender, who has played more than 40 NHL games, gotten paid?
+
+```{r aav distribution by szn}
+aav_gp_data <-
+  cf_data %>%
+  select(player, aav, szn) %>%
+  left_join(
+    cf_data %>%
+      group_by(player) %>%
+      summarise(gp = sum(gp)), 
+    by = 'player'
+  ) %>%
+  filter(gp > 40)
+
+aav_gp_data %>%
+  mutate(szn = paste0(20, szn)) %>%
+  ggplot(aes(szn, aav, color = szn, fill = szn)) +
+  geom_violin(alpha = 0.8,
+              show.legend = F, trim = T, width = 0.9) +
+  geom_boxplot(width = 0.1, color = 'grey90', fill = 'grey50', alpha = 0.1) +
+  labs(x = NULL, y = 'Average annual value ($)') +
+  #ggtitle('Distribution of goalie average annual value') +
+  scale_y_continuous(labels = scales::dollar) +
+  fishualize::scale_color_fish_d(option = 'Scarus_globiceps') +
+  fishualize::scale_fill_fish_d(option = 'Scarus_globiceps') +
+  theme_classic() +
+  theme(axis.line = element_blank(),
+        axis.text.x = element_text(size = 12, color = 'grey25'),
+        axis.text.y = element_text(size = 7, color = 'grey25'),
+        axis.title.y = element_text(size = 9, color = 'grey25', face = 'italic'),
+        plot.title = element_text(hjust = 0.5, size = 16, color = 'grey15', face= 'italic'))
+```
+
+Another way goalies are weird is that goalies in the past have not usually made as much as their skater teammates. This is starting to change however. For example, Carey Price signed a contract extension that took effect in the 18-19 season for \$10.5M per year over 8 years, \$84M in total by the time the contract is up (see above plot). This was an unprecedented signing at the time, but as teams start to value good, consistent goalies more and more, we are likely to see more high-valued goalie contracts. We can see from the plot that the median AAV has shifted in the past two seasons from \$2M to closer to \$3M. Also the AAV distribution is more spread out in the last couple seasons, instead of being clumped all near the lower end.  
+
+### Contract inflation
+
+- How are goalie contracts inflating?
+
+```{r Contract inflation, warning=FALSE, message=FALSE}
+cf_data %>%
+  group_by(exp_year) %>%
+  summarise(med_aav = median(aav)) %>%
+  ggplot(aes(exp_year, med_aav)) +
+  geom_step(color = 'turquoise3', size = 1) +
+  labs(x = 'Contract expiry year', y = 'Median average annual value of contract') +
+  scale_y_continuous(labels = scales::dollar) +
+  theme_classic() +
+  theme(axis.line = element_blank())
+```
+
+### Top paid players post-lockout
+
+```{r, warning = FALSE}
+
+## Get top 10 paid players in league over last 7 years
+top_10_paid <- 
+  cf_data %>%
+    group_by(player) %>%
+    top_n(1, aav) %>%
+    ungroup() %>%
+    distinct(player, aav, team) %>%
+    top_n(10, aav)
+
+## Plot top 10 paid players
+top_10_paid %>%
+  mutate(team = substr(team, start = str_length(team) - 2, stop = str_length(team))) %>%
+  mutate(player = paste0(player, '\n(', team, ')     ')) %>%
+  ggplot() +
+  geom_segment(aes(x = reorder(player, aav), xend = player, y = 0, yend = aav), color = 'grey50') +
+  geom_point(aes(x = player, y = aav, color = team), size = 5, show.legend = F) +
+  labs(x = NULL, y = 'Average annual value') +
+  #ggtitle('Top 10 paid players in the league (as of 2018-19)') +
+  coord_flip() +
+  scale_color_fish_d(option = 'Callanthias_australis') +
+  scale_y_continuous(labels = scales::dollar) +
+  theme_classic() +
+  theme(axis.line = element_blank(),
+        axis.text.y = element_text(size = 10, color = 'grey25'),
+        plot.title = element_text(hjust = 0.5, size = 16, color = 'grey25', face= 'italic'))
+
+```
+
+## How Contracts Affect Play
 ***
 
 - How good are goalies that got paid a lot? (vice versa)
@@ -757,45 +840,140 @@ starting_goalies_comb
 ## How Much Will Goalies Get Paid
 ***
 
-- how many goalies are we looking at?
-- show where the goalies are from (it could be a single plot since most of the goalies will be the same over the years), what do they look like? (height & weight)
-	- plot showing where they are from
-	- plot showing height/weight
-- who are the best ones?  
-	- plot of their avg szn
+- Build multivariate regression model to predict contract average annual value
+- Make predictions and compare to actual contracts
+
+```{r Regression prep}
+## Prep and combine data
+
+cf_reg_data <- 
+  cf_data %>%
+  mutate(
+    ## Removes accents off names
+    player = stri_trans_general(player, 'latin-ascii'),
+    ## Transform all names to lowercase
+    player = str_to_lower(player)) %>%
+    ## Remove redundant cols
+    select(-weight, -height, -pos, -team, -age, -gp, -w, -l, -so, -gaa, -sv_percent)
+
+hr_reg_data <-
+  hr_data %>%
+  ## Transform all names to lowercase
+  mutate(player = str_to_lower(player)) %>%
+  # Filter for post lockout szns
+  filter(szn != '12-13') %>%
+  # Fix nicknames
+  mutate(player = case_when(
+    str_detect(player, 'cal heeter') ~ str_replace(player, 'cal heeter', 'calvin heeter'),
+    str_detect(player, 'matt o\'connor') ~ str_replace(player, 'matt o\'connor', 'matthew o\'connor'),
+    str_detect(player, 'eddie pasquale') ~ str_replace(player, 'eddie pasquale', 'edward pasquale'),
+    TRUE ~ as.character(player)
+  ))
+
+mp_reg_data <- 
+  mp_data %>%
+  # Filter data for all situations (5v5, player-down, player-up)
+  filter(situation == 'all', szn != '12-13') %>%
+  # Remove redundant cols
+  select(-player_id, -team, -season, -position, -games_played, 
+         -penality_minutes, -penalties, -situation, -goals) %>%
+  # Transform all names to lowercase
+  mutate(name = str_to_lower(name)) %>%
+  # Fix nicknames
+  mutate(name = case_when(
+    str_detect(name, 'tom mccollum') ~ str_replace(name, 'tom mccollum', 'thomas mccollum'),
+    str_detect(name, 'j.f. berube') ~ str_replace(name, 'j.f. berube', 'jean-francois berube'),
+    str_detect(name, 'j-f berube') ~ str_replace(name, 'j-f berube', 'jean-francois berube'),
+    str_detect(name, 'cal petersen') ~ str_replace(name, 'cal petersen', 'calvin petersen'),
+    TRUE ~ as.character(name)
+  ))
+
+# Join all data together
+joined_data <-
+  hr_reg_data %>%
+  full_join(mp_reg_data, by = c('player' = 'name', 'szn' = 'szn')) %>%
+  inner_join(cf_reg_data, by = c('player', 'szn')) %>%
+  # Remove extra contract info (since we don't "know" this information yet)
+  select(-rk, -cap_hit_percent, -salary, -length, -cap_hit) 
+
+reg_data <- 
+  joined_data %>%
+  # Code binary variables
+  mutate(handed = ifelse(handed == 'Left', 0, 1),
+         expiry = ifelse(expiry == 'UFA', 0, 1)) %>%
+  # Select numeric predictors
+  select_if(is.numeric)
+```
+
+### Feature selection
+- *Way* too many predictors
+```{r, echo = TRUE}
+reg_data %>% ncol()
+```
+
+Calculate **information gain** for predictors and grab 10 highest predictors in information gain
+
+```{r, echo = FALSE}
+## Feature selection
+info_gain <- information.gain(formula = aav ~ ., data = reg_data)
+subset_info_gain <- cutoff.k(info_gain, k = 10)
+
+feat_selected <- 
+  reg_data %>% 
+  select(subset_info_gain, aav)
+
+feat_selected %>% head() %>% kable() %>% kable_styling()
+```
+
+Build regression model with selected features
+
+```{r linear model}
+## Model
+mod <- lm(aav~., feat_selected)
+summary(mod)
+```
+
+#### Predictions
+
+- Sergei Bobrovsky: got paid $11M AAV when he signed this season
+
+```{r}
+new_data1 <- 
+  joined_data %>%
+  filter(player == 'sergei bobrovsky', szn == '18-19') %>%
+  select(subset_info_gain)
+
+predict(mod, new_data1)
+```
+
+- Mikko Koskinen: got paid $4.5M AAV when he signed an extension
+
+```{r}
+new_data2 <-
+  joined_data %>%
+  filter(player == 'mikko koskinen') %>%
+  select(subset_info_gain)
+
+predict(mod, new_data2)
+```
+
 
 
 ## Conclusions
 ***
 
-- how many goalies are we looking at?
-- show where the goalies are from (it could be a single plot since most of the goalies will be the same over the years), what do they look like? (height & weight)
-	- plot showing where they are from
-	- plot showing height/weight
-- who are the best ones?  
-	- plot of their avg szn
+
 
 
 ## Data
 ***
-
-- how many goalies are we looking at?
-- show where the goalies are from (it could be a single plot since most of the goalies will be the same over the years), what do they look like? (height & weight)
-	- plot showing where they are from
-	- plot showing height/weight
-- who are the best ones?  
-	- plot of their avg szn
-
-
-## References
-***
-
-### Data  
-
 - HockeyReference
 - CapFriendly
 - MoneyPuckf
 - MetaHockey
+
+## References
+***
 
 ### Report formatting  
 - Side navigation menu: https://bookdown.org/yihui/rmarkdown/html-document.html
