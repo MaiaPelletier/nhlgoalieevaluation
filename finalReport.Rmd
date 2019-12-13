@@ -406,9 +406,13 @@ ggplotly(p)
 
 So we can see that the largest chunck of goalies seems to fall between 183 - 193cm (6'0 - 6'3 ft) in height and 85 - 95kg (187 - 210lbs) in weight. So only slightly taller and heavier than the average adult male, which is what you would expect from a professional athelete but is not quite what you would expect if you tend to think of goalies as big players.  
 
-### The Best (and Worst) of the NHL  
+### The Best (and Worst) of the NHL
+We wanted to see some how much the best and the worst goalies are getting paid.  This is to see if they are getting over paid becuse they are not preforming well, or to see if a team is getting a good deal by not paying too much for a really goog goalie.   
+We used four different metrics to determine how good a goalie is. The first is Save Percentage which is the percent of shots the goalie allows in compared to all shots faced. The second is goals against average, which is the average expected goals that the goalie will let in during a game. The third is percentage of how many games the goalie won.  The final metric is goals saved above average which shows the average goals saved compared to the league average.
 
-#### The top 10 averages by goalie
+#### The top 10 averages by goalies over the past 6 seasons
+Let's find out who the top 10 goalies were over the past 6 seasons. 
+
 
 ```{r top 10 avgs}
 
@@ -479,8 +483,14 @@ mean_gsaa_plot <-
 (Mean_sv_plot | Mean_gaa_plot) / (mean_w_percent_plot | mean_gsaa_plot)
 ```
 
+From the graphs we can see some common names pop up between the four metrics, for example Carey Price, Sergei Bobrovsky are all names really good goalies and that is why they get paid around 7 Million per year on average. 
+
+Some other good goalies that are making around 3 Million per year are Matt Murray, Andrei Vasilevskiy. Those teams are getting a good deal for top quality goaltending. 
+
+
 #### Top goalies by season 
 
+We then just wanted to see what the top goalie was in each metric for any particular season.
 ```{r top G by szn}
 # Finding the best goalies by Season
 # creates tables for each stat we are looking at
@@ -574,7 +584,7 @@ year_plots
 #   title = "Top Goalies by Season"
 # )
 ```
-
+From here we see some of the names again that appeared on the top averages graph. Notibly Carey Price and Sergei Bobrovsky.  We also want to point out that many of the top goalies peer season were with the team that either won the Stanely Cup or are with a team that was in the top of the standings.   ->>> do we want to show a graph for this? or should I leave it? 
 #### Worst Goalies over past seasons
 
 ```{r worst G over past szns}
