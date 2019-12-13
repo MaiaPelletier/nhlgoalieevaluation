@@ -32,7 +32,7 @@ library(readxl)
 library(lubridate)
 library(ggthemes)
 library(stringi)
-library(FSelector)
+#library(FSelector)
 library(kableExtra)
 
 theme_set(theme_minimal())
@@ -584,8 +584,12 @@ year_plots
 #   title = "Top Goalies by Season"
 # )
 ```
-From here we see some of the names again that appeared on the top averages graph. Notibly Carey Price and Sergei Bobrovsky.  We also want to point out that many of the top goalies peer season were with the team that either won the Stanely Cup or are with a team that was in the top of the standings.   ->>> do we want to show a graph for this? or should I leave it? 
+From here we see some of the names again that appeared on the top averages graph. Notibly Carey Price and Sergei Bobrovsky.  We also want to point out that many of the top goalies per season were with the team that either won the Stanely Cup or are with a team that was in the top of the standings. This will be shown later when we see who the goalies were for the top preforming teams. 
+
 #### Worst Goalies over past seasons
+Now that we took a look at the best performing goalies, it is only fair that we analyze the 10 worst performing goalies over the past 6 seasons.  
+
+
 
 ```{r worst G over past szns}
 
@@ -625,8 +629,14 @@ Worst_average_plots <- (worst_mean_sv_plot | worst_mean_gaa_plot) / (worst_mean_
 
 Worst_average_plots 
 ```
+There is one goalie that I want to pay attention too on this chart, and that is Cam Ward.  He is one of the worst performing goalies on average over the past 6 seasons with one the highest salaries that is around $5 Million a year. He has the lowest Save percentage and the worst goals saved above average with a -70 goals saved. I do however want to mention that Cam Ward carried his team to a Stanley Cup however in 2006 while posting a 0.882 Save Percentage.  
 
-#### Worst goalies over last 6 seasons  
+Mike Smith is another high paid goalie that is constantly bad with his goals against average and games won. The other goalies are all pad a lower amount that is around 2M per year, which means that their teams luckily are not spending too much money on a bad goalie. 
+
+
+#### Worst goalies over last 6 seasons
+
+We wanted to see who were some of the truly worst goalies in the past 6 seasons.  A truly bad goalie has a save percentage of less than 0.9 in the season and has played more than 40 games. 
 
 ```{r, warning = FALSE, message = FALSE}
 
@@ -655,35 +665,40 @@ worst_goalies <- worst_goalies %>%
   mutate(w_percent = w/gp)
 
 wg_sv_percent <- worst_goalies %>% 
-  ggplot(aes(x = sv_percent, y = aav)) + 
-  geom_point(size = 2, color = '#a7d2cb') +
+  ggplot(aes(x = sv_percent, y = aav, color = szn)) + 
+  geom_point(size = 2) +
   geom_text_repel(aes(label = player), size = 3) +
-  labs(x = "Save Percentage", y = "Annual Average Salary")
+  labs(x = "Save Percentage", y = "Annual Average Salary", color = "Season")
 
-wg_gsaa <- worst_goalies %>% ggplot(aes(x = gsaa, y = aav)) + 
-  geom_point(size = 2, color = '#f2d388') +
+wg_gsaa <- worst_goalies %>% 
+  ggplot(aes(x = gsaa, y = aav, color = szn)) + 
+  geom_point(size = 2) +
   geom_text_repel(aes(label = player), size = 3) +
-  labs(x = "Goals Saved Above Average", y = "Annual Average Salary")
+  labs(x = "Goals Saved Above Average", y = "Annual Average Salary", color = "Season")
 
-wg_gaa <- worst_goalies %>% ggplot(aes(x = gaa, y = aav)) + 
-  geom_point(size = 2, color = '#c98474') + 
+wg_gaa <- worst_goalies %>% 
+  ggplot(aes(x = gaa, y = aav, color = szn)) + 
+  geom_point(size = 2) + 
   geom_text_repel(aes(label = player), size = 3) +
-  labs(x = "Goals Against Average", y = "Annual Average Salary")
+  labs(x = "Goals Against Average", y = "Annual Average Salary", color = "Season")
 
 wg_w_percent <- worst_goalies %>% 
-  ggplot(aes(x = w_percent, y = aav)) + 
-  geom_point(size = 2, color = '#874c62') + 
+  ggplot(aes(x = w_percent, y = aav, color = szn)) + 
+  geom_point(size = 2) + 
   geom_text_repel(aes(label = player), size = 3) +
-  labs(x = "Win Percentage", y = "Annual Average Salary")
+  labs(x = "Win Percentage", y = "Annual Average Salary", color = "Season")
 
 Worst_goalies_plot <- (wg_sv_percent | wg_gaa) / (wg_w_percent | wg_gsaa)
-
-Worst_goalies_plot 
-# + plot_annotation(
-#   title = "Worst perfoming goalies and how much they get paid"
-# )
+#874c62
+Worst_goalies_plot + plot_annotation(
+   caption = 'A bad season has a save percentage of less than 0.90'
+ )
 
 ```
+
+From the charts we see that there are only 8 goalies who had a really bad season since the lockout.  Most of them got paid over 4M for that year.  Some notable mentions include Johnathan Quick who had his worst season in 2018-2019.  He is a declining performing goalie who once led his team to two Stanley Cups in his prime. Martin Jones had a bad season in 2018-2019 as well and his team lost in the conference finals in the Stanley Cup.  Roberto Luongo was another great goalie back in 2010 who led team Canada to a Gold medal in the Vancouver Olympics and led the Vancouver Canucks to game 7 of the Stanely Cup final. 
+
+Mike Smith is getting paid way to much since he has no track record like some of the other goalies in this category. He really should not be getting paid what he is since the the other goalies mentioned above were on long term contracts and are nearing the end of their carreer. 
 
 #### First place team goalie performance
 
