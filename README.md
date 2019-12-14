@@ -1089,9 +1089,6 @@ a large way to their teams success or failure.
 
 -----
 
-Find all data and code hosted in this project’s public [Github
-repository](https://github.com/MaiaPelletier/nhlgoalieevaluation/).
-
   - HockeyReference
     (<https://www.hockey-reference.com/leagues/NHL_2019_goalies.html#stats>::none)
   - CapFriendly
